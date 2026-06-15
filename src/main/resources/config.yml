@@ -1,0 +1,202 @@
+#---------------------------------------------------------------------------------------------#
+#                                                                                             #
+#   ______          _____ _______   _____  ____  __  __ __  __          _   _ _____   _____   #
+#  |  ____|   /\   / ____|__   __| / ____|/ __ \|  \/  |  \/  |   /\   | \ | |  __ \ / ____|  #
+#  | |__     /  \ | (___    | |   | |    | |  | | \  / | \  / |  /  \  |  \| | |  | | (___    #
+#  |  __|   / /\ \ \___ \   | |   | |    | |  | | |\/| | |\/| | / /\ \ | . ` | |  | |\___ \   #
+#  | |     / ____ \____) |  | |   | |____| |__| | |  | | |  | |/ ____ \| |\  | |__| |____) |  #
+#  |_|    /_/    \_\_____/  |_|   \_____| \____ |_|  |_|_|  |_/_/    \_\_| \_|_____/ |_____/  #
+#                                                                                             #
+#---------------------------------------------------------------------------------------------#
+
+# FastCommands by Norbit4
+
+# github: https://github.com/Norbit4
+
+# If you like the plugin, support me with a positive opinion <3
+
+#---------------------------------------#
+#                [Help]                 #
+#---------------------------------------#
+
+# 1.Reload config:
+#  To reload config use /bc reload, or /fastcommands reload command.
+
+#  [!] When you add a new command or change name existing command, you need to restart the server!
+#  Paper server doesn't support add new commands without a restart server :c
+
+# 2.Actions:
+#   - replace:
+#      replace command to another command
+#      ex. /core -> /essentials, when a player uses /core reload it will replace to /essentials reload
+
+#   - text:
+#      send a message to player who uses command
+
+#   - broadcast:
+#      broadcast message to all players on server
+
+#   - server_command:
+#      execute command as console
+
+#   - player_command:
+#      execute command as player
+
+# 3.Routes:
+#   - Routes allow you to create different command behaviors based on arguments.
+#   - Arguments wrapped in <> are required parameters.
+#   - Arguments wrapped in [] capture the remaining text as a single value.
+#
+#   Examples:
+#
+#   Route:
+#     "<amount>"
+#   Command:
+#     /diamonds 64
+#   Result:
+#     {0} = 64
+#
+#   Route:
+#     "[text]"
+#   Command:
+#     /broadcast Hello everyone!
+#   Result:
+#     {0} = Hello everyone!
+#
+#   Route:
+#     "give <player> <item> <amount>"
+#   Command:
+#     /reward give Steve diamond 5
+#   Result:
+#     {0} = Steve
+#     {1} = diamond
+#     {2} = 5
+#
+#   Route:
+#     "take <player> <item> <amount>"
+#   Command:
+#     /reward take Steve diamond 5
+#
+#   Placeholders:
+#     {0}, {1}, {2}... correspond to route arguments
+#     {player} = player who executed the command
+#
+#   - Enable 'completer: true' to provide route suggestions in tab completion.
+
+# 4.Placeholders:
+#   - {player} - player name who uses command
+
+#  For other placeholders, use PlaceholderAPI plugin:
+#   - https://www.spigotmc.org/resources/placeholderapi.6245/
+
+# 4.Hex colors:
+#   - To use HEX color, use &#HEXCODE (ex. &#DBC7FF)
+
+# hex codes: https://htmlcolorcodes.com/
+#---------------------------------------#
+#               [Config]                #
+#---------------------------------------#
+
+default-message:
+  permission: '&cYou do not have permission to use this command!'
+  cooldown: '&cYou need to wait {time} seconds to use this command again!'
+
+commands:
+  core: # <- command name (without /)
+    permission: 'player.core' # <- when a player doesn't have permission, it will send a message default message
+    actions:
+      action-1:
+        type: 'replace' # <- replace, message, broadcast
+        action:
+          - 'essentials' # <- command to replace, when player use /core, it will replace to /essentials
+
+  broadcast:
+    permission: 'admin.broadcast' # <- permission to use this command
+    permission-message:  '&cYou cannot use this command!' # <- message when player doesn't have permission
+    completer: true
+    actions:
+      action-1:
+        type: 'text'
+        action:
+          - '&cUsage: /broadcast <text>'
+    routes:
+      "[text]":
+        #multi actions
+        actions:
+          action-1:
+            type: 'text'
+            action:
+              - '&#DBC7FFSended to all players!!' # <- to use HEX color, use &#HEXCODE
+          action-2:
+            type: 'broadcast'
+            delay: 30 # <- action delay in ticks
+            action:
+              - '&aSended from {player}!'
+              - '&a{0}'
+
+  diamonds:
+    cooldown: 5
+    completer: true
+    actions:
+      action-1:
+        type: 'text'
+        action:
+          - '&cUsage: /diamonds <amount>'
+    routes:
+      "<amount>":
+        actions:
+          action-1:
+            type: 'text'
+            action:
+              - '&#DBC7FFDiamonds! {0}'
+          action-2:
+            type: 'server_command'
+            action:
+              - 'give {player} minecraft:diamond {0}'
+
+  rank:
+    permission: 'admin.rank'
+    completer: true
+    actions:
+      help:
+        type: 'text'
+        action:
+          - '&6Rank Commands'
+          - '&e/rank set <player> <rank>'
+          - '&e/rank add <player> <rank>'
+          - '&e/rank remove <player> <rank>'
+    routes:
+      # Matches:
+      # /rank set Steve admin
+      # /rank set Alex vip
+      #
+      # "set" is a literal keyword that must be typed.
+      # <player> and <rank> are required arguments.
+      # Arguments can be accessed as:
+      # {0} = set
+      # {1} = player
+      # {2} = rank
+      "set <player> <rank>":
+        actions:
+          action-1:
+            type: 'server_command'
+            action:
+              - 'lp user {1} parent set {2}'
+          action-2:
+            type: 'broadcast'
+            action:
+              - '&6{player} &eset rank of &6{1} &eto &a{2}&e.'
+      # Matches:
+      # /rank remove Steve vip
+      # /rank remove Alex moderator
+      #
+      # Removes a rank/group from a player.
+      # {0} = remove
+      # {1} = player
+      # {2} = rank
+      "remove <player> <rank>":
+        actions:
+          action-1:
+            type: 'server_command'
+            action:
+              - 'lp user {1} parent remove {2}'

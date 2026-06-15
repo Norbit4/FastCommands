@@ -1,0 +1,14 @@
+name: FastCommands
+version: '${version}'
+main: pl.norbit.fastcommands.FastCommands
+api-version: '1.16'
+author: Norbit4
+website: 'https://github.com/Norbit4'
+softdepend:
+  - PlaceholderAPI
+commands:
+  fastcommands:
+    permission: 'fc.*'
+    description: FastCommands
+    usage: /<command>
+    aliases: [fc]
