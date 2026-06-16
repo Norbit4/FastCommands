@@ -35,10 +35,10 @@ public class ReloadCommand implements CommandExecutor, TabCompleter {
 
     private static void sendInfo(CommandSender sender){
         sender.sendMessage(ChatUtils.format(""));
-        sender.sendMessage(ChatUtils.format("&7BetterCommands by &aNorbit4!"));
-        sender.sendMessage(ChatUtils.format("&7Website: &fhttps://n0rbit.pl/"));
+        sender.sendMessage(ChatUtils.format("&7FastCommands by &aNorbit4!"));
+        sender.sendMessage(ChatUtils.format("&7Website: &fhttps://github.com/Norbit4"));
         sender.sendMessage(ChatUtils.format(""));
-        sender.sendMessage(ChatUtils.format("&7Type: &8/&bbc reload &7to reload plugin!"));
+        sender.sendMessage(ChatUtils.format("&7Type: &8/&bfc reload &7to reload plugin!"));
         sender.sendMessage(ChatUtils.format(""));
     }
 
