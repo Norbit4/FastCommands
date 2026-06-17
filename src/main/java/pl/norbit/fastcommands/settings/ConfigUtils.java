@@ -1,10 +1,7 @@
 package pl.norbit.fastcommands.settings;
 
 import org.bukkit.configuration.ConfigurationSection;
-import pl.norbit.fastcommands.model.ArgType;
-import pl.norbit.fastcommands.model.CommandAction;
-import pl.norbit.fastcommands.model.CommandNode;
-import pl.norbit.fastcommands.model.ExecuteCommand;
+import pl.norbit.fastcommands.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,10 +139,27 @@ public class ConfigUtils {
             action.setType(commandType);
             action.setDelay(delay);
             action.setAction(actionSection.getStringList("action"));
+            action.setWrap(parseWrap(actionSection));
 
             actions.add(action);
         });
 
         return actions;
+    }
+
+    private static WrapSettings parseWrap(ConfigurationSection section) {
+        ConfigurationSection wrapSection = section.getConfigurationSection("wrap");
+
+        if (wrapSection == null) {
+            return null;
+        }
+
+        WrapSettings wrap = new WrapSettings();
+
+        wrap.setEnabled(wrapSection.getBoolean("enabled"));
+        wrap.setMaxLength(wrapSection.getInt("max-length", 35));
+        wrap.setPlaceholders(wrapSection.getIntegerList("placeholders"));
+
+        return wrap;
     }
 }

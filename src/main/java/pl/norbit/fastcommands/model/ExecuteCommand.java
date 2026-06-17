@@ -4,7 +4,9 @@ import lombok.*;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import pl.norbit.fastcommands.FastCommands;
 import pl.norbit.fastcommands.cooldown.CooldownService;
 import pl.norbit.fastcommands.placeholders.PlaceholderService;
@@ -12,6 +14,7 @@ import pl.norbit.fastcommands.settings.Config;
 import pl.norbit.fastcommands.utils.ChatUtils;
 import pl.norbit.fastcommands.utils.MessageUtils;
 import pl.norbit.fastcommands.utils.PermissionUtils;
+import pl.norbit.fastcommands.utils.TextWrapper;
 
 import java.util.*;
 
@@ -139,57 +142,73 @@ public class ExecuteCommand extends BukkitCommand {
     public @NotNull List<String> tabComplete(
             @NotNull CommandSender sender,
             @NotNull String alias,
-            @NotNull String[] args) {
+            @NotNull String @NonNull [] args) {
 
-        if(!completer){
+        if (!completer) {
             return Collections.emptyList();
         }
 
+        Map<String, CommandNode> current = findCurrentNode(args);
+
+        if (current == null) {
+            return Collections.emptyList();
+        }
+
+        String lastArg = args.length == 0
+                ? ""
+                : args[args.length - 1].toLowerCase();
+
+        return getSuggestions(current, lastArg);
+    }
+
+    private Map<String, CommandNode> findCurrentNode(String[] args) {
         Map<String, CommandNode> current = subCommands;
 
-        for(int i = 0; i < args.length - 1; i++){
-            CommandNode next =
-                    current.get(args[i].toLowerCase());
+        for (int i = 0; i < args.length - 1; i++) {
+            CommandNode next = current.get(args[i].toLowerCase());
 
-            if(next == null){
+            if (next == null) {
                 next = findArgumentNode(current);
 
-                if(next == null){
-                    return Collections.emptyList();
+                if (next == null) {
+                    return Collections.emptyMap();
                 }
             }
-
             current = next.getSubCommands();
         }
 
-        String lastArg =
-                args.length == 0
-                        ? ""
-                        : args[args.length - 1].toLowerCase();
+        return current;
+    }
 
+    private List<String> getSuggestions(Map<String, CommandNode> current, String lastArg) {
         List<String> suggestions = new ArrayList<>();
 
-        current.forEach((key, node) -> {
-            if(node.isArgumentNode()){
-                if(node.isTabPlayers()){
-                    server.getOnlinePlayers()
-                            .forEach(player -> {
-                                if(player.getName()
-                                        .toLowerCase()
-                                        .startsWith(lastArg)) {
+        for (Map.Entry<String, CommandNode> entry : current.entrySet()) {
+            CommandNode node = entry.getValue();
 
-                                    suggestions.add(player.getName());
-                                }
-                            });
-                }
-            }else{
-                if(key.startsWith(lastArg)){
-                    suggestions.add(key);
-                }
+            if (node.isArgumentNode()) {
+                addArgumentSuggestions(node, lastArg, suggestions);
+            } else if (entry.getKey().startsWith(lastArg)) {
+                suggestions.add(entry.getKey());
             }
-        });
+        }
 
         return suggestions;
+    }
+
+    private void addArgumentSuggestions(
+            CommandNode node,
+            String lastArg,
+            List<String> suggestions) {
+
+        if (!node.isTabPlayers()) {
+            return;
+        }
+
+        server.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .filter(name -> name.toLowerCase().startsWith(lastArg))
+                .forEach(suggestions::add);
     }
 
     private void applyCooldown(CommandSender sender) {
@@ -260,13 +279,19 @@ public class ExecuteCommand extends BukkitCommand {
         List<String> cmdActions = cmdAction.getAction();
         switch (cmdAction.getType()) {
             case REPLACE -> {
-                var usageCommand = new StringBuilder(cmdActions.get(0));
+                var usageCommand = new StringBuilder(cmdActions.getFirst());
 
                 Arrays.stream(args).forEach(arg -> usageCommand.append(" ").append(arg));
 
                 server.dispatchCommand(sender, usageCommand.toString());
             }
-            case TEXT -> cmdActions.forEach(m -> MessageUtils.toSender(sender, m, args));
+            case TEXT -> {
+                List<String> messages = TextWrapper.wrap(cmdAction, args);
+
+                messages.forEach(m ->
+                        MessageUtils.toSender(sender, m)
+                );
+            }
             case PLAYER_COMMAND ->
                     cmdActions.forEach(c -> {
                         String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);

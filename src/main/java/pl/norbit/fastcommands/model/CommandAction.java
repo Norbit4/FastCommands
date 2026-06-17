@@ -9,4 +9,5 @@ public class CommandAction {
     private ArgType type;
     private List<String> action;
     private int delay;
+    private WrapSettings wrap;
 }
