@@ -302,7 +302,12 @@ public class ExecuteCommand extends BukkitCommand {
                         String command = ChatUtils.replace(PlaceholderService.replace(c, sender), args);
                         server.dispatchCommand(server.getConsoleSender(), command);
                     });
-            case BROADCAST -> cmdActions.forEach(m -> MessageUtils.toAll(sender, m, args));
+            case BROADCAST -> {
+                List<String> messages = TextWrapper.wrap(cmdAction, args);
+
+                messages.forEach(m ->
+                        MessageUtils.toAll(sender, m, args));
+            }
         }
     }
 }
