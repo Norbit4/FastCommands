@@ -116,9 +116,9 @@ commands:
     completer: true
     actions:
       action-1:
-        type: 'text'
-        action:
-          - '&cUsage: /broadcast <text>'
+        type:
+          action:
+            - '&cUsage: /broadcast <text>'
     routes:
       "[text]":
         #multi actions
