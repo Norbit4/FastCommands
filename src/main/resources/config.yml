@@ -136,6 +136,8 @@ commands:
 
   diamonds:
     cooldown: 5
+    aliases:
+      - getdiamond
     completer: true
     actions:
       action-1:

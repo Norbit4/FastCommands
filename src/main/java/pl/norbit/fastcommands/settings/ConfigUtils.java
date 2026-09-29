@@ -74,7 +74,9 @@ public class ConfigUtils {
 
             if(section == null) return;
 
-            ExecuteCommand executeCommand = new ExecuteCommand(name);
+            List<String> aliases = section.getStringList("aliases");
+
+            ExecuteCommand executeCommand = new ExecuteCommand(name, aliases);
 
             boolean completer = section.getBoolean("completer");
             String perm = section.getString("permission");

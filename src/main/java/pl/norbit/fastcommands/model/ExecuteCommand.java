@@ -37,8 +37,13 @@ public class ExecuteCommand extends BukkitCommand {
     private boolean completer;
     private Map<String, CommandNode> subCommands;
 
-    public ExecuteCommand(@NotNull String name) {
+    public ExecuteCommand(@NotNull String name, List<String> aliases) {
         super(name);
+
+        if(aliases != null && !aliases.isEmpty()){
+            super.setAliases(aliases);
+        }
+
         this.actions = new ArrayList<>();
         this.cmdName = name;
         this.subCommands = new HashMap<>();
